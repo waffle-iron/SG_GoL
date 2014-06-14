@@ -1,0 +1,175 @@
+buildscript {
+	repositories {
+		maven {
+            name 'Shadow'
+            url 'http://dl.bintray.com/content/johnrengelman/gradle-plugins'
+        }
+		maven {
+			name = "sonatype"
+			url = "https://oss.sonatype.org/content/repositories/snapshots/"
+        }
+		mavenCentral()
+		mavenLocal()
+		jcenter()
+	}
+	dependencies {
+		classpath 'com.github.jengelman.gradle.plugins:shadow:0.8'
+		classpath 'edu.sc.seis.gradle:macappbundle:2.0.0'
+		classpath 'edu.sc.seis.gradle:launch4j:1.0.6'
+	}
+}
+
+apply plugin: 'maven'
+apply plugin: 'java'
+apply plugin: 'eclipse'
+apply plugin: 'idea'
+apply plugin: 'shadow'
+apply plugin: 'launch4j'
+apply plugin: 'application'
+
+project.ext {
+    mainClass = 'de.sydsoft.sg_gol.gui.Main'
+    currentYear = '2014'
+}
+
+if (System.getenv().BUILD_NUMBER != null) {
+	ext.buildNum = System.getenv().BUILD_NUMBER
+} else {
+	ext.buildNum = "9999999"
+}
+
+mainClassName = project.mainClass
+group = 'de.sydsoft'
+version = "2.0.0-${project.buildNum}"
+description = "Sydsoft Games - Game of Life"
+sourceCompatibility = 1.7
+targetCompatibility = 1.7
+
+shadow {
+    exclude 'META-INF/*.DSA'
+    exclude 'META-INF/*.RSA'
+	//classifier = "${System.getenv().BUILD_NUMBER}"
+	destinationDir = "${buildDir}/libs/"
+	artifactSet {
+        include 'de.sydsoft'
+		include 'com.thoughtworks.xstream'
+		include 'commons-codec'
+    }
+}
+
+task deleteOrig(type: Delete) {
+    delete "${project.tasks.jar.getArchivePath().getPath()}"
+}
+task fixJars(type: Copy) {
+
+    from("${buildDir}/libs/")
+	destinationDir = file("${buildDir}/libs/")
+        rename { String fileName ->
+            fileName.replace('-shadow', '')
+        }
+		rename(/(.+)-shadow(.+)/, '$1$2')
+}
+task deleteShadow(type: Delete) {
+    delete "${project.tasks.jar.getArchivePath().getPath().replace('.jar', '-shadow.jar')}"
+
+	}
+task zipApp(type: Zip) {
+    from "${project.buildDir}/macApp/"
+    destinationDir = file("${project.buildDir}/libs")
+    classifier = 'app'
+}
+
+apply plugin: 'macAppBundle'
+
+assemble.dependsOn.remove(createDmg)
+build.dependsOn.remove(createDmg)
+build.dependsOn(zipApp)
+zipApp.dependsOn(createApp)
+createApp.dependsOn(deleteShadow)
+deleteShadow.dependsOn(fixJars)
+fixJars.dependsOn(deleteOrig)
+deleteOrig.dependsOn(shadowJar)
+
+afterEvaluate {
+	launch4j {
+		icon = file("src/main/res/de/sydsoft/sg_gol/gui/Logo.png").getCanonicalPath()
+		jreMinVersion = '1.6.0'
+		jar = project.tasks.jar.getArchivePath().getPath()
+		outfile = project.tasks.jar.getArchivePath().getPath().replace(".jar", ".exe")
+		mainClassName = project.mainClass
+	}
+}
+
+artifacts {
+	archives file(project.tasks.jar.getArchivePath().getPath().replace(".jar", ".exe"))
+	archives file(project.tasks.jar.getArchivePath().getPath().replace(".jar", "-app.zip"))
+}
+
+macAppBundle {
+    mainClassName = project.mainClass
+    appName = "Feed The Beast"
+    icon = "src/main/res/de/sydsoft/sg_gol/gui/Logo.png"
+    javaProperties.put("apple.laf.useScreenMenuBar", "true")
+    bundleExtras.put("NSHighResolutionCapable", "true")
+}
+
+jar {
+    manifest {
+        attributes 'Main-Class': project.mainClass, 'Launcher-Jenkins': project.buildNum
+    }
+}
+
+configurations {
+    deployerJars
+}
+
+repositories {
+	maven {
+		name = "sonatype"
+		url = "https://oss.sonatype.org/content/groups/public/"
+	}
+	maven{
+		name = "sythelux"
+		url = "https://raw.githubusercontent.com/Sythelux/maven-repository/"
+	}
+	mavenCentral()
+	mavenLocal()
+}
+
+
+dependencies {
+	compile 'commons-codec:commons-codec:1.6'
+	compile 'com.thoughtworks.xstream:xstream:1.4.+'
+	compile 'de.sydsoft:libST:1.+'
+	testCompile 'junit:junit:4.10'
+}
+
+sourceSets {
+    main {
+        resources {
+            srcDir 'src/main/res'
+        }
+    }
+}
+
+if (project.hasProperty("local_maven")) {
+	apply plugin: 'maven'
+		uploadArchives {
+			repositories {
+				mavenDeployer {
+					repository(url: "file://${local_maven}")
+			}
+		}
+	}
+}
+if (project.hasProperty("remote_maven")) {
+	apply plugin: 'maven'
+		uploadArchives {
+		repositories.mavenDeployer {
+			configuration = configurations.deployerJars
+			repository(url: "ftp://${remote_maven}") {
+				authentication(userName: "${ftp_username}", password: "${ftp_pass}")
+			}
+		}
+	}
+}
