@@ -128,10 +128,6 @@ repositories {
 		name = "sonatype"
 		url = "https://oss.sonatype.org/content/groups/public/"
 	}
-	maven{
-		name = "sythelux"
-		url = "https://raw.githubusercontent.com/Sythelux/maven-repository/"
-	}
 	mavenCentral()
 	mavenLocal()
 }
@@ -140,7 +136,6 @@ repositories {
 dependencies {
 	compile 'commons-codec:commons-codec:1.6'
 	compile 'com.thoughtworks.xstream:xstream:1.4.+'
-	compile 'de.sydsoft:libST:1.+'
 	testCompile 'junit:junit:4.10'
 }
 
