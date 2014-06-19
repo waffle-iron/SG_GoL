@@ -1,4 +1,6 @@
-package de.sydsoft.sg_gol.world;
+package de.sydsoft.sg_gol.model;
+
+import de.sydsoft.sg_gol.world.AlienWorld;
 
 
 /**

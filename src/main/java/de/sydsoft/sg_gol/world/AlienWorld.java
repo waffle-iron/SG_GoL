@@ -13,11 +13,11 @@ import java.util.Random;
 
 import javax.swing.JPanel;
 
-import de.sydsoft.libst.util.Console;
-
 import de.sydsoft.sg_gol.entities.Alien;
+import de.sydsoft.sg_gol.model.AlienTimer;
 import de.sydsoft.sg_gol.model.Constants;
 import de.sydsoft.sg_gol.model.GoLPattern;
+import de.sydsoft.sg_gol.model.PerlinNoise;
 
 /**
  * 
@@ -32,7 +32,7 @@ public class AlienWorld extends JPanel implements MouseMotionListener {
 	private boolean				resized				= false;
 	private boolean				stored				= false;
 	private Graphics			offscreen;
-	private Random				rnd					= new Random();
+	private PerlinNoise				pn					= new PerlinNoise();
 	private GoLPattern			currentGoLP;
 
 	/**
@@ -238,12 +238,12 @@ public class AlienWorld extends JPanel implements MouseMotionListener {
 							al[i][j] = al2[i][j];
 						}
 						for (int j = al2length2; j < anzy; j++) {
-							al[i][j] = new Alien(rnd.nextBoolean());
+							al[i][j] = new Alien(pn.getb(i*10, j*10));
 						}
 					}
 					for (int i = al2length; i < anzx; i++) {
 						for (int j = 0; j < anzy; j++) {
-							al[i][j] = new Alien(rnd.nextBoolean());
+							al[i][j] = new Alien(pn.getb(i*10, j*10));
 						}
 					}
 				} else {
@@ -254,7 +254,7 @@ public class AlienWorld extends JPanel implements MouseMotionListener {
 					}
 					for (int i = al2length; i < anzx; i++) {
 						for (int j = 0; j < anzy; j++) {
-							al[i][j] = new Alien(rnd.nextBoolean());
+							al[i][j] = new Alien(pn.getb(i*10, j*10));
 						}
 					}
 				}
@@ -265,7 +265,7 @@ public class AlienWorld extends JPanel implements MouseMotionListener {
 							al[i][j] = al2[i][j];
 						}
 						for (int j = al2length2; j < anzy; j++) {
-							al[i][j] = new Alien(rnd.nextBoolean());
+							al[i][j] = new Alien(pn.getb(i*10, j*10));
 						}
 					}
 				} else {
@@ -279,7 +279,7 @@ public class AlienWorld extends JPanel implements MouseMotionListener {
 		} else {
 			for (int i = 0; i < anzx; i++) {
 				for (int j = 0; j < anzy; j++) {
-					al[i][j] = new Alien(rnd.nextBoolean());
+					al[i][j] = new Alien(pn.getb(i*10, j*10));
 				}
 			}
 		}
@@ -498,10 +498,10 @@ public class AlienWorld extends JPanel implements MouseMotionListener {
 	 * @param ok
 	 */
 	public void random() {
-		Random rnd = new Random();
+		PerlinNoise pn = new PerlinNoise(8);
 		for (int i = 0; i < anzx; i++) {
 			for (int j = 0; j < anzy; j++) {
-				al[i][j].setAlive(rnd.nextBoolean());
+				al[i][j].setAlive(pn.getb(i*10, j*10));
 			}
 		}
 		repaint();

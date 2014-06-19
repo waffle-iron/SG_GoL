@@ -1,18 +1,12 @@
 package de.sydsoft.sg_gol.lang;
 
 import java.io.IOException;
-import java.net.URISyntaxException;
-import java.nio.charset.Charset;
-import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import de.sydsoft.libst.io.TextIO;
-import de.sydsoft.libst.util.Console;
 
 /**
  * 

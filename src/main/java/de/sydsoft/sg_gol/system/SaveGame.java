@@ -10,14 +10,12 @@ import java.util.logging.Logger;
 
 import javax.swing.JProgressBar;
 
-import de.sydsoft.libst.util.Console;
-
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.io.xml.DomDriver;
 
 import de.sydsoft.sg_gol.entities.Alien;
 
-public class SaveSettings {
+public class SaveGame {
 	private Color		alienColor;
 	private Color		backgroundColor;
 	private int			pH;
@@ -26,9 +24,9 @@ public class SaveSettings {
 	private int			anzY;
 	private int			pixel;
 	private Alien[][]	aliens;
-	private static Logger logger = Logger.getLogger(SaveSettings.class.getName());
+	private static Logger logger = Logger.getLogger(SaveGame.class.getName());
 
-	public SaveSettings(int pH, int pW, int anzX, int anzY, int pixel, Alien[][] aliens, Color alienColor, Color backgroundColor) {
+	public SaveGame(int pH, int pW, int anzX, int anzY, int pixel, Alien[][] aliens, Color alienColor, Color backgroundColor) {
 		this.alienColor = alienColor;
 		this.backgroundColor = backgroundColor;
 		this.pH = pH;
@@ -39,16 +37,16 @@ public class SaveSettings {
 		this.aliens = aliens;
 	}
 
-	public static SaveSettings load(File fileName, JProgressBar sp) {
+	public static SaveGame load(File fileName, JProgressBar sp) {
 		sp.setValue(0);
 		XStream xStream = new XStream(new DomDriver());
 		sp.setValue(50);
-		SaveSettings gol = (SaveSettings) xStream.fromXML(fileName);
+		SaveGame gol = (SaveGame) xStream.fromXML(fileName);
 		sp.setValue(100);
 		return gol;
 	}
 
-	public static void save(File file, SaveSettings gol, JProgressBar sp) {
+	public static void save(File file, SaveGame gol, JProgressBar sp) {
 		sp.setValue(1);
 		XStream xStream = new XStream(new DomDriver());
 		sp.setValue(10);
