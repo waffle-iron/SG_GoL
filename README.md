@@ -19,3 +19,6 @@ This Project contains gradle building and running should be easy.
 * to build a runnable exe you will need launch4j then you can type "gradlew launch4j"
 
 if you made a eclipse or IDEA project proir you can build it as usual.
+
+##Travis stats
+[![Build Status](https://travis-ci.org/Sythelux/SG_GoL.svg?branch=master)](https://travis-ci.org/Sythelux/SG_GoL)
