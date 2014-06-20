@@ -15,7 +15,7 @@ This Project contains gradle with the ability to create an eclipse and an IDEA E
 ##Compiling
 This Project contains gradle building and running should be easy.
 * Download the source, as zip oder with git
-* to build a runnable jar type: "gradlew build" gradle will build a runnable jar in "<projectpath>/build/libs"
+* to build a runnable jar type: "gradlew build" gradle will build a runnable jar and a mac app in "<projectpath>/build/libs"
 * to build a runnable exe you will need launch4j then you can type "gradlew launch4j"
 
 if you made a eclipse or IDEA project proir you can build it as usual.
