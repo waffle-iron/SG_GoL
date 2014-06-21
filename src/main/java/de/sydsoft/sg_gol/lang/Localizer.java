@@ -1,12 +1,18 @@
 package de.sydsoft.sg_gol.lang;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
+import java.nio.charset.Charset;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import de.sydsoft.libst.io.TextIO;
+import de.sydsoft.libst.util.Console;
 
 /**
  * 
@@ -28,10 +34,9 @@ public abstract class Localizer {
 
 	static {
 		try {
-			logger.log(Level.FINE, "detected Language is:"+lang);
 			Properties p = new Properties();
-			System.out.println(Localizer.class.getResourceAsStream("/de/sydsoft/sg_gol/lang/" + lang + ".properties"));
-			p.load(Localizer.class.getResourceAsStream("/de/sydsoft/sg_gol/lang/" + lang + ".properties"));
+			System.out.println(Localizer.class.getResourceAsStream("/lang/" + lang + ".properties"));
+			p.load(Localizer.class.getResourceAsStream("/lang/" + lang + ".properties"));
 			for (final String name : p.stringPropertyNames())
 				loc.put(name, p.getProperty(name));
 			loc.put("version", version());
@@ -50,7 +55,7 @@ public abstract class Localizer {
 
 	private static String version() throws IOException {
 		Properties p = new Properties(); 
-		p.load(Localizer.class.getResourceAsStream("/de/sydsoft/sg_gol/txt/PatchNotes.properties"));
+		p.load(Localizer.class.getResourceAsStream("/txt/PatchNotes.properties"));
 		String[] names = new String[p.size()];
 		names = p.stringPropertyNames().toArray(names);
 		Arrays.sort(names);

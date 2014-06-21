@@ -4,24 +4,31 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.ComponentOrientation;
 import java.awt.Dimension;
+import java.awt.DisplayMode;
 import java.awt.Event;
 import java.awt.FileDialog;
+import java.awt.GraphicsDevice;
+import java.awt.GraphicsEnvironment;
 import java.awt.Label;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.IOException;
+import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.BackingStoreException;
 
 import javax.imageio.ImageIO;
+import javax.imageio.ImageWriter;
+import javax.imageio.stream.ImageOutputStream;
 import javax.swing.JButton;
 import javax.swing.JColorChooser;
 import javax.swing.JDialog;
@@ -38,11 +45,12 @@ import javax.swing.UIManager;
 import de.sydsoft.libst.gui.SProgressDialog;
 import de.sydsoft.libst.sfl.SFileChooser;
 import de.sydsoft.libst.sfl.StdFileNExtFilter;
+import de.sydsoft.libst.util.Console;
 import de.sydsoft.sg_gol.lang.Localizer;
 import de.sydsoft.sg_gol.model.Constants;
 import de.sydsoft.sg_gol.model.GoLPattern;
 import de.sydsoft.sg_gol.system.AppSettings;
-import de.sydsoft.sg_gol.system.SaveGame;
+import de.sydsoft.sg_gol.system.SaveSettings;
 import de.sydsoft.sg_gol.world.AlienWorld;
 
 /**
@@ -59,6 +67,8 @@ public class GuiGameOfLife extends JFrame {
 	private JMenuItem[]				oMenuItems;
 	/** Fachkonzept */
 	private AlienWorld				alienWorld;
+	/** hoehe,breite */
+	private int						h				= 480, w = 640;
 	/** ob in Vollbild, */
 	private boolean					fullscreen		= false;
 	/** ob in beiden seiten Maximiert */
@@ -112,7 +122,7 @@ public class GuiGameOfLife extends JFrame {
 		appSettings.setTitle(Localizer.get("dialog.header") + " " + Localizer.get("version") + " (© Astrid Fiedler, Sythelux Rikd)");
 		appSettings.turnOnAutoSave(uniqueAppName);
 		try {
-			super.setIconImage(ImageIO.read(GuiGameOfLife.class.getResource("/de/sydsoft/sg_gol/gui/Logo.png")));
+			super.setIconImage(ImageIO.read(GuiGameOfLife.class.getResource("/gui/Logo.png")));
 		} catch (IOException e1) {
 			e1.printStackTrace();
 		}
@@ -414,8 +424,8 @@ public class GuiGameOfLife extends JFrame {
 	 * @param sp
 	 */
 	public void initSave(File fileName, JProgressBar sp) {
-		SaveGame gol = new SaveGame(alienWorld.getH(), alienWorld.getW(), alienWorld.getAnzx(), alienWorld.getAnzy(), alienWorld.getAlienSize(), alienWorld.getAl(), Constants.ALIENALIVECOLOR, Constants.ALIENDEATHCOLOR);
-		SaveGame.save(fileName, gol, sp);
+		SaveSettings gol = new SaveSettings(alienWorld.getH(), alienWorld.getW(), alienWorld.getAnzx(), alienWorld.getAnzy(), alienWorld.getAlienSize(), alienWorld.getAl(), Constants.ALIENALIVECOLOR, Constants.ALIENDEATHCOLOR);
+		SaveSettings.save(fileName, gol, sp);
 	}
 
 	/**
@@ -425,7 +435,7 @@ public class GuiGameOfLife extends JFrame {
 	 * @param sp
 	 */
 	public void initLoad(File fileName, JProgressBar sp) {
-		SaveGame gol = SaveGame.load(fileName, sp);
+		SaveSettings gol = SaveSettings.load(fileName, sp);
 		if (fullscreen) {
 			fullscreen = !fullscreen;
 			changeFullscreen();

@@ -47,7 +47,8 @@ import java.util.prefs.Preferences;
 
 import javax.swing.JFrame;
 
-@SuppressWarnings("serial")
+import de.sydsoft.sg_gol.model.Constants;
+
 public class AppSettings extends HashMap<String, Object> {
 
 	private static final AppSettings	defaults			= new AppSettings(false);
