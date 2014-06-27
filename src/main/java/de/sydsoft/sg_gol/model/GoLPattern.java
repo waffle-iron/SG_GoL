@@ -1,46 +1,70 @@
 package de.sydsoft.sg_gol.model;
 
 import java.awt.Graphics2D;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.util.Arrays;
 
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JToolBar;
-
-import de.sydsoft.sg_gol.gui.swing.GuiAddPattern;
-import de.sydsoft.sg_gol.gui.swing.GuiGameOfLife;
+import javafx.embed.swing.SwingFXUtils;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
+import javafx.geometry.Pos;
+import javafx.scene.Node;
+import javafx.scene.Parent;
+import javafx.scene.control.Button;
+import javafx.scene.control.ContentDisplay;
+import javafx.scene.control.ToolBar;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.Pane;
+import javafx.scene.text.TextAlignment;
+import javafx.stage.Stage;
+import de.sydsoft.sg_gol.gui.javafx.GuiAddPattern;
+import de.sydsoft.sg_gol.gui.javafx.GuiGameOfLife;
 import de.sydsoft.sg_gol.lang.Localizer;
 import de.sydsoft.sg_gol.world.AlienWorld;
 
-public class GoLPattern implements ActionListener {
+public class GoLPattern {
 	private static GoLPatternList	PatternList	= new GoLPatternList();
 	private boolean[][]				oldArray;
 	private boolean[][]				pattern;
 	private String					name;
 
-	public GoLPattern(String name, String[] pattern, JToolBar patternBar) {
+	public GoLPattern(String name, String[] pattern) {
 		this.name = name;
 		this.oldArray = this.pattern = parsePattern(pattern);
-		patternBar.add(createButton());
 	}
 
-	public GoLPattern(String name, boolean[][] pattern, JToolBar patternBar) {
+	public GoLPattern(String name, boolean[][] pattern) {
 		this.name = name;
 		this.oldArray = this.pattern = pattern;
-		patternBar.add(createButton());
 	}
 
-	private JButton createButton() {
-		JButton b = new JButton();
-		b.setIcon(this.getIcon());
-		b.setText(this.getName());
-		b.setVerticalTextPosition(JButton.TOP);
-		b.setHorizontalTextPosition(JButton.CENTER);
-		b.addActionListener(this);
+	private Button createButton() {
+		Button b = new Button(getName(),new ImageView(getIcon()));
+		b.setContentDisplay(ContentDisplay.TOP);
+		b.setMaxHeight(Double.MAX_VALUE);
+		b.setAlignment(Pos.BOTTOM_CENTER);
+//		b.setVerticalTextPosition(JButton.TOP);
+//		b.setHorizontalTextPosition(JButton.CENTER);
+//		b.addActionListener(this);
+		b.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent event) {
+				if (event.getSource() instanceof Button) {
+					Button eventButton = (Button) event.getSource();
+					GoLPattern goLPB = PatternList.get(eventButton.getText());
+					System.out.println(eventButton.getText()+" selected.");
+					if (goLPB != null) {
+						GuiGameOfLife.getInstance().pause();
+						AlienWorld al = GuiGameOfLife.getInstance().getAlienWorld();
+						if (al.isPatternInUse()) {
+							al.resetPatternInUse();
+						}
+						al.setCurrentPattern(goLPB);
+					}
+				}
+			}
+		});
 		return b;
 	}
 
@@ -65,53 +89,56 @@ public class GoLPattern implements ActionListener {
 		return width;
 	}
 	
-	public Icon getIcon() {
+	public Image getIcon() {
 		int scale = 2;
 		BufferedImage bi = new BufferedImage(scale * pattern.length+2, scale * pattern[0].length+2, BufferedImage.TYPE_INT_ARGB);
 		Graphics2D g = (Graphics2D) bi.getGraphics();
 		g.scale(scale, scale);
-		g.setColor(Constants.DEFAULTALIENDEATHCOLOR);
+		g.setColor(Constants.toSwingColor(Constants.DEFAULTALIENDEATHCOLOR));
 		g.fillRect(0, 0, bi.getWidth(), bi.getHeight());
 			for (int x = 0; x < pattern.length; x++) {
 				for (int y = 0; y < pattern[x].length; y++) {
-				if (pattern[x][y]) g.setColor(Constants.DEFAULTALIENALIVECOLOR);
-				else g.setColor(Constants.DEFAULTALIENDEATHCOLOR);
+				if (pattern[x][y]) g.setColor(Constants.toSwingColor(Constants.DEFAULTALIENALIVECOLOR));
+				else g.setColor(Constants.toSwingColor(Constants.DEFAULTALIENDEATHCOLOR));
 				g.fillRect(x+1, y+1, 1, 1);
 			}
 		}
-		return new ImageIcon(bi);
+		return SwingFXUtils.toFXImage(bi, null);
 	}
 	public String getName() {
 		return name;
 	}
 
-	public static void addPattern(String name, JToolBar patternBar, String... pattern) {
+	public static void addPattern(String name, Pane patternBar, String... pattern) {
 		if (PatternList.contains(pattern)) return;
-		PatternList.add(new GoLPattern(name, pattern, patternBar));
+		GoLPattern golp = new GoLPattern(name, pattern);
+		PatternList.add(golp);
+		patternBar.getChildren().add(golp.createButton());
 	}
 
-	public static void addPattern(String name, JToolBar patternBar, boolean[][] bPattern) {
+	public static void addPattern(String name, Pane patternBar, boolean[][] bPattern) {
 		if (PatternList.contains(bPattern)) return;
-		PatternList.add(new GoLPattern(name, bPattern, patternBar));
+		GoLPattern golp = new GoLPattern(name, bPattern);
+		PatternList.add(golp);
+		patternBar.getChildren().add(golp.createButton());
 	}
 
-	public static void fill(JToolBar patternBar) {
-		addGUI(patternBar);
+	public static void fill(Pane patternBar, Stage stage) {
+		addGUI(patternBar, stage);
 		addPattern("Glider", patternBar, " x  ", "  x ", "xxx ");
 		addPattern("Gun", patternBar, "                        x", "                      x x", "            xx      xx            xx", "           x   x    xx            xx", "xx        x     x   xx", "xx        x   x xx    x x", "          x     x       x", "           x   x", "            xx");
 	}
 
-	private static void addGUI(JToolBar patternBar) {
-		JButton newB = new JButton();
-		newB.setText(Localizer.get("toolBox.new"));
-		newB.addActionListener(new ActionListener() {
-			
+	private static void addGUI(Pane patternBar, final Stage stage) {//TODO:
+		Button newB = new Button(Localizer.get("toolBox.new"));
+		newB.setMaxHeight(Double.MAX_VALUE);
+		newB.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
-			public void actionPerformed(ActionEvent arg0) {
-				GuiAddPattern.showDialog();
+			public void handle(ActionEvent event) {
+				GuiAddPattern.showDialog(stage);
 			}
 		});
-		patternBar.add(newB);
+		patternBar.getChildren().add(newB);
 	}
 
 	static boolean[][] rotateCW(boolean[][] mat) {
@@ -124,23 +151,6 @@ public class GoLPattern implements ActionListener {
 	        }
 	    }
 	    return ret;
-	}
-
-	@Override
-	public void actionPerformed(ActionEvent e) {
-		if (e.getSource() instanceof JButton) {
-			JButton eventButton = (JButton) e.getSource();
-			GoLPattern goLPB = PatternList.get(eventButton.getText());
-			System.out.println(eventButton.getText()+" selected.");
-			if (goLPB != null) {
-				GuiGameOfLife.getInstance().stop();
-				AlienWorld al = GuiGameOfLife.getInstance().getAlienWorld();
-				if (al.isPatternInUse()) {
-					al.resetPatternInUse();
-				}
-				al.setCurrentPattern(goLPB);
-			}
-		}
 	}
 
 	public boolean[][] clonePattern() {

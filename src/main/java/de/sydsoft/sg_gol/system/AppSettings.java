@@ -31,7 +31,6 @@
  */
 package de.sydsoft.sg_gol.system;
 
-import java.awt.Dimension;
 import java.awt.Point;
 import java.io.IOException;
 import java.io.InputStream;
@@ -44,6 +43,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
+
+import javafx.geometry.Dimension2D;
 
 import javax.swing.JFrame;
 
@@ -229,25 +230,25 @@ public class AppSettings extends HashMap<String, Object> {
 		return b;
 	}
 	
-	public void setYPosition(int y) {
-		putInteger("YPos", y);
+	public void setYPosition(Number y) {
+		putInteger("YPos", y.intValue());
 	}
 
-	public void setXPosition(int x) {
-		putInteger("XPos", x);
+	public void setXPosition(Number x) {
+		putInteger("XPos", x.intValue());
 	}
 
-	public void setWidth(int value) {
-		putInteger("Width", value);
+	public void setWidth(Number value) {
+		putInteger("Width", value.intValue());
 	}
 
-	public void setHeight(int value) {
-		putInteger("Height", value);
+	public void setHeight(Number value) {
+		putInteger("Height", value.intValue());
 	}
 
-	public void setResolution(int width, int height) {
-		setWidth(width);
-		setHeight(height);
+	public void setResolution(double width, double height) {
+		setWidth((int) width);
+		setHeight((int) height);
 	}
 
 	public void setTitle(String title) {
@@ -281,11 +282,8 @@ public class AppSettings extends HashMap<String, Object> {
 		return getInteger("Height");
 	}
 	
-	public Dimension getSize(){
-		Dimension d = new Dimension();
-		d.height = getHeight();
-		d.width = getWidth();
-		return d;
+	public Dimension2D getSize(){
+		return new Dimension2D(getWidth(),getHeight());
 	}
 	
 	public int getExtendedState(){

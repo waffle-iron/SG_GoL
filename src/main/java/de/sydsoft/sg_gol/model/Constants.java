@@ -4,10 +4,10 @@
  */
 package de.sydsoft.sg_gol.model;
 
-import java.awt.Color;
+import javafx.scene.paint.Color;
 
 /**
- *
+ *	http://serennu.com/colour/colourcalculator.php
  * @author syd
  */
 public class Constants {
@@ -18,26 +18,36 @@ public class Constants {
     /**
      * 
      */
-    public static Color ALIENALIVECOLOR = new Color(0xffdcb1);
+    public static final Color DEFAULTALIENALIVECOLOR = Color.web("0xFFDCB1");
     /**
      * 
      */
-    public static Color ALIENDEATHCOLOR = new Color(0x008000);//DeathColor = Background
+    public static final Color DEFAULTALIENDEATHCOLOR = Color.web("0x008000");//DeathColor = Background
     /**
      * 
      */
-    public static final Color DEFAULTALIENALIVECOLOR = new Color(0xffdcb1);
+    public static Color ALIENALIVECOLOR = DEFAULTALIENALIVECOLOR;
     /**
      * 
      */
-    public static final Color DEFAULTALIENDEATHCOLOR = new Color(0x008000);//DeathColor = Background
+    public static Color ALIENDEATHCOLOR = DEFAULTALIENDEATHCOLOR;//DeathColor = Background
     /**
      * 
      */
     public static Color ComplementaryAliveColor(){
-    	return new Color(255-ALIENALIVECOLOR.getRed(),255-ALIENALIVECOLOR.getGreen(),255-ALIENALIVECOLOR.getBlue());
+    	return ALIENALIVECOLOR.invert();
     }
 	public static Color ComplementaryDeathColor() {
-    	return new Color(255-ALIENDEATHCOLOR.getRed(),255-ALIENDEATHCOLOR.getGreen(),255-ALIENDEATHCOLOR.getBlue());
+    	return ALIENDEATHCOLOR.invert();
+	}
+
+	public static final java.awt.Color toSwingColor(Color javafxColor){
+		int r = (int) (javafxColor.getRed() * 255);
+		int g = (int) (javafxColor.getGreen() * 255);
+		int b = (int) (javafxColor.getBlue() * 255);
+		 
+		//This is the combined sRGB value which can be passed to a Swing Color object.
+		int rgb = (r << 16) + (g << 8) + b;
+		return new java.awt.Color(rgb);
 	}
 }

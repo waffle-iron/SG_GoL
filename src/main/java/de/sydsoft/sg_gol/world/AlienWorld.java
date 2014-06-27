@@ -1,20 +1,27 @@
 package de.sydsoft.sg_gol.world;
 
-import java.awt.Color;
-import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Point;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseMotionListener;
+import java.awt.image.BufferedImage;
 import java.util.Arrays;
 import java.util.Random;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.FutureTask;
 
-import javax.swing.JPanel;
+import com.sun.javafx.fxml.builder.JavaFXSceneBuilder;
 
+import javafx.animation.AnimationTimer;
+import javafx.embed.swing.SwingFXUtils;
+import javafx.event.EventHandler;
+import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.input.MouseButton;
+import javafx.scene.input.MouseEvent;
+import javafx.scene.paint.Color;
 import de.sydsoft.sg_gol.entities.Alien;
-import de.sydsoft.sg_gol.model.AlienTimer;
 import de.sydsoft.sg_gol.model.Constants;
 import de.sydsoft.sg_gol.model.GoLPattern;
 import de.sydsoft.sg_gol.model.PerlinNoise;
@@ -23,26 +30,43 @@ import de.sydsoft.sg_gol.model.PerlinNoise;
  * 
  * @author syd
  */
-public class AlienWorld extends JPanel implements MouseMotionListener {
-	private static final long	serialVersionUID	= -3630357287023316946L;
-	private int					anzx, anzy, yoff, xoff;
-	private int					w, h, alienSize;
-	private Alien[][]			al;
-	private AlienTimer			at;
-	private boolean				resized				= false;
-	private boolean				stored				= false;
-	private Graphics			offscreen;
-	private PerlinNoise				pn					= new PerlinNoise();
-	private GoLPattern			currentGoLP;
+public class AlienWorld {
+	private int				anzx, anzy, yoff, xoff;
+	private int				w, h, alienSize;
+	private Alien[][]		al;
+	private boolean			resized			= false;
+	private PerlinNoise		pn				= new PerlinNoise();
+	private GoLPattern		currentGoLP;
+	private BufferedImage	offscreen;
+	private ExecutorService			executor		= Executors.newCachedThreadPool();
+	private FutureTask<Void>		future			= new FutureTask<>(createCallable());
+	private ImageView				iv;
+	private AnimationTimer			animationTimer	= new AnimationTimer() {
+												@Override
+												public void handle(long now) {
+													drawShapes(offscreen.createGraphics());
+													iv.setImage(toJavaFXImage());
+												}
+											};
+
+	public void stopRender() {
+		animationTimer.stop();
+	}
+	
+	public void startRender() {
+		animationTimer.start();
+	}
 
 	/**
 	 * 
 	 * @param pixel
 	 */
-	public AlienWorld(int alienSize) {
+	public AlienWorld(int alienSize, ImageView iv) {
+		offscreen = new BufferedImage(800, 600, BufferedImage.TYPE_INT_ARGB);
 		this.alienSize = alienSize;
-		this.setBackground(Constants.ALIENDEATHCOLOR);
-		initialize();
+		this.iv = iv;
+		initialize(iv);
+		startRender();
 	}
 
 	// Version 1 ohne umlaufendes Spielfeld
@@ -82,7 +106,11 @@ public class AlienWorld extends JPanel implements MouseMotionListener {
 	/**
      * 
      */
-	public void callNextOrbicularStep() {
+	public void update() {
+		if (resized) {
+			createAlien(true);
+			resized = false;
+		}
 		Alien[][] a = new Alien[anzx][anzy];
 		for (int i = 0; i < anzx; i++) {
 			for (int j = 0; j < anzy; j++) {
@@ -108,7 +136,7 @@ public class AlienWorld extends JPanel implements MouseMotionListener {
 				al[i][j] = a[i][j];
 			}
 		}
-		repaint();
+		// repaint();
 	}
 
 	// Version 1 mit nicht umlaufenden Spielfeld
@@ -216,8 +244,8 @@ public class AlienWorld extends JPanel implements MouseMotionListener {
 	 */
 	public void createAlien(boolean ok) {
 		if (ok) {
-			h = getHeight();
-			w = getWidth();
+			h = offscreen.getHeight();
+			w = offscreen.getWidth();
 			anzy = ((h - alienSize) / alienSize);
 			anzx = ((w - alienSize) / alienSize);
 		}
@@ -238,12 +266,12 @@ public class AlienWorld extends JPanel implements MouseMotionListener {
 							al[i][j] = al2[i][j];
 						}
 						for (int j = al2length2; j < anzy; j++) {
-							al[i][j] = new Alien(pn.getb(i*10, j*10));
+							al[i][j] = new Alien(pn.getb(i * 10, j * 10));
 						}
 					}
 					for (int i = al2length; i < anzx; i++) {
 						for (int j = 0; j < anzy; j++) {
-							al[i][j] = new Alien(pn.getb(i*10, j*10));
+							al[i][j] = new Alien(pn.getb(i * 10, j * 10));
 						}
 					}
 				} else {
@@ -254,7 +282,7 @@ public class AlienWorld extends JPanel implements MouseMotionListener {
 					}
 					for (int i = al2length; i < anzx; i++) {
 						for (int j = 0; j < anzy; j++) {
-							al[i][j] = new Alien(pn.getb(i*10, j*10));
+							al[i][j] = new Alien(pn.getb(i * 10, j * 10));
 						}
 					}
 				}
@@ -265,7 +293,7 @@ public class AlienWorld extends JPanel implements MouseMotionListener {
 							al[i][j] = al2[i][j];
 						}
 						for (int j = al2length2; j < anzy; j++) {
-							al[i][j] = new Alien(pn.getb(i*10, j*10));
+							al[i][j] = new Alien(pn.getb(i * 10, j * 10));
 						}
 					}
 				} else {
@@ -279,7 +307,7 @@ public class AlienWorld extends JPanel implements MouseMotionListener {
 		} else {
 			for (int i = 0; i < anzx; i++) {
 				for (int j = 0; j < anzy; j++) {
-					al[i][j] = new Alien(pn.getb(i*10, j*10));
+					al[i][j] = new Alien(pn.getb(i * 10, j * 10));
 				}
 			}
 		}
@@ -288,10 +316,10 @@ public class AlienWorld extends JPanel implements MouseMotionListener {
 	/**
      * 
      */
-	public void drawRaster() {
+	public void drawRaster(Graphics2D gc) {
 		for (int i = 0; i < anzx; i++) {
 			for (int j = 0; j < anzy; j++) {
-				al[i][j].drawAlien(offscreen, xoff + alienSize * i, yoff + alienSize * j, alienSize);
+				al[i][j].drawAlien(gc, xoff + alienSize * i, yoff + alienSize * j, alienSize);
 			}
 		}
 	}
@@ -340,53 +368,57 @@ public class AlienWorld extends JPanel implements MouseMotionListener {
 	 * 
 	 * @return
 	 */
-	public AlienTimer getTimer() {
-		return at;
-	}
-
-	/**
-	 * 
-	 * @return
-	 */
 	public int getW() {
 		return w;
 	}
 
-	private void initialize() {
+	private void initialize(ImageView iv) {
 		// buffer = createImage(getWidth(), getHeight());
-		addComponentListener(new ComponentAdapter() {
-
-			@Override
-			public void componentResized(ComponentEvent arg0) {
-				resized = true;
-			}
-		});
-		this.addMouseListener(new MouseAdapter() {
-
-			@Override
-			public void mouseClicked(MouseEvent e) {
-				System.out.printf("Mouse clicke @: %d|%d", e.getX(), e.getY());
-				int xcl = (e.getX() - xoff) / alienSize;
-				int ycl = (e.getY() - yoff) / alienSize;
-				if ((e.getButton() == MouseEvent.BUTTON1)) {
+		// addComponentListener(new ComponentAdapter() {
+		//
+		// @Override
+		// public void componentResized(ComponentEvent arg0) {
+		// resized = true;
+		// }
+		// });
+		iv.setOnMouseClicked(new EventHandler<MouseEvent>() {
+			public void handle(MouseEvent e) {
+				System.out.printf("Mouse click @: %f|%f\n", e.getX(), e.getY());
+				int xcl = (int) ((e.getX() - xoff) / alienSize);
+				int ycl = (int) ((e.getY() - yoff) / alienSize);
+				if ((e.getButton() == MouseButton.PRIMARY)) {
 					if (currentGoLP == null) {
 						al[xcl][ycl].setAlive(!al[xcl][ycl].isAlive());
 					} else {
 						placePattern(xcl, ycl);
 					}
 				}
-				if ((e.getButton() == MouseEvent.BUTTON2)) {
+				if ((e.getButton() == MouseButton.MIDDLE)) {
 					if (currentGoLP != null) clearTemplate(xcl, ycl);
 					currentGoLP = null;
 				}
-				if ((e.getButton() == MouseEvent.BUTTON3)) {
+				if ((e.getButton() == MouseButton.SECONDARY)) {
 					if (currentGoLP != null) clearBackground(xcl, ycl);
 				}
-				repaint();
+			}
+
+		});
+
+		iv.setOnMouseDragged(new EventHandler<MouseEvent>() {
+			public void handle(MouseEvent e) {
+				if (currentGoLP == null) return;
+				Point newP = new Point((int) (e.getX() - xoff) / alienSize, (int) (e.getY() - yoff) / alienSize);
+				if (newP.equals(lastP)) return;
+				if (isPatternInUse()) clearTemplate(lastP.x, lastP.y);
+				lastP = newP;
+				createTemplate(newP.x, newP.y);
+				// repaint();
 			}
 		});
-		addMouseMotionListener(this);
-		requestFocus();
+
+		createAlien(true);
+		// at = new AlienTimer(this, 100);
+		iv.requestFocus();
 	}
 
 	/**
@@ -402,25 +434,8 @@ public class AlienWorld extends JPanel implements MouseMotionListener {
 		return 0;
 	}
 
-	// Zeichenmethode auf Graphics
-	@Override
-	public void paintComponent(Graphics g) {
-		super.paintComponent(g);
-		// g.setColor(Color.YELLOW);
-		offscreen = g;
-
-		if (resized) {
-			createAlien(true);
-			// setRandom(true);
-
-			drawRaster();
-			resized = false;
-		} else {
-			drawRaster();
-		}
-		if (stored) {
-			stored = false;
-		}
+	private void drawShapes(Graphics2D g) {
+		drawRaster(g);
 	}
 
 	/**
@@ -432,7 +447,7 @@ public class AlienWorld extends JPanel implements MouseMotionListener {
 				al[i][j].setAlive(false);
 			}
 		}
-		repaint();
+		// repaint();
 	}
 
 	/**
@@ -465,8 +480,8 @@ public class AlienWorld extends JPanel implements MouseMotionListener {
 	 */
 	public void setBackgroundColor(Color clBack) {
 		Constants.ALIENDEATHCOLOR = clBack;
-		this.setBackground(Constants.ALIENDEATHCOLOR);
-		repaint();
+		// this.setBackground(Constants.ALIENDEATHCOLOR);
+		// repaint();
 	}
 
 	/**
@@ -501,10 +516,10 @@ public class AlienWorld extends JPanel implements MouseMotionListener {
 		PerlinNoise pn = new PerlinNoise(8);
 		for (int i = 0; i < anzx; i++) {
 			for (int j = 0; j < anzy; j++) {
-				al[i][j].setAlive(pn.getb(i*10, j*10));
+				al[i][j].setAlive(pn.getb(i * 10, j * 10));
 			}
 		}
-		repaint();
+		// repaint();
 	}
 
 	/**
@@ -513,22 +528,6 @@ public class AlienWorld extends JPanel implements MouseMotionListener {
 	 */
 	public void setResized(boolean resized) {
 		this.resized = resized;
-	}
-
-	/**
-	 * 
-	 * @param stored
-	 */
-	public void setStored(boolean stored) {
-		this.stored = stored;
-	}
-
-	/**
-	 * 
-	 * @param sleept
-	 */
-	public void setTimer(int sleept) {
-		at = new AlienTimer(this, sleept);
 	}
 
 	/**
@@ -547,63 +546,11 @@ public class AlienWorld extends JPanel implements MouseMotionListener {
 		return resized;
 	}
 
-	/**
-     * 
-     */
-	public void stopTimer() {
-		at.stopThread();
-	}
-
-	@Override
-	public void update(Graphics g) {
-		// g.setColor(Color.YELLOW);
-		// offscreen = g;
-		// h = getHeight();
-		// w = getWidth();
-		// anzy = (h - pixel) / pixel;
-		// anzx = (w - pixel) / pixel;
-		// xoff = (w - anzx * pixel) / 2;
-		// yoff = (h - anzy * pixel) / 2;
-		//
-		// if(start==0){
-		// ev = new GameBoard(anzx, anzy, xoff, yoff, pixel);
-		// start++;
-		// }
-		// al = new Alien[anzx][anzy];
-		//
-		// for (int i = 0; i < anzx; i++) {
-		// for (int j = 0; j < anzy; j++) {
-		// al[i][j] = new Alien();
-		// }
-		// }
-		//
-		// for (int i = 0; i < anzx; i++) {
-		// for (int j = 0; j < anzy; j++) {
-		// al[i][j].drawAlien(offscreen, xoff + pixel * i, yoff
-		// + pixel * j, pixel);
-		// }
-		// }
-	}
-
 	public void setCurrentPattern(GoLPattern golP) {
 		this.currentGoLP = golP;
 	}
 
-	@Override
-	public void mouseDragged(MouseEvent e) {}
-
 	private Point	lastP	= new Point(-1, -1);
-
-	@Override
-	public void mouseMoved(MouseEvent e) {
-		if (currentGoLP == null) return;
-		Point newP = new Point((e.getX() - xoff) / alienSize, (e.getY() - yoff) / alienSize);
-		if (newP.equals(lastP)) return;
-		if (isPatternInUse()) clearTemplate(lastP.x, lastP.y);
-		lastP = newP;
-		createTemplate(newP.x, newP.y);
-		repaint();
-	}
 
 	private void placePattern(int x, int y) {
 		System.out.printf("Pattern placed @: %d|%d\n", x, y);
@@ -653,7 +600,7 @@ public class AlienWorld extends JPanel implements MouseMotionListener {
 	public void clearTemplate(Point p) {
 		clearTemplate(p.x, p.y);
 	}
-	
+
 	private void clearTemplate(int x, int y) {
 		if (currentGoLP == null) return;
 		boolean[][] oldArray = currentGoLP.cloneBackupPattern();
@@ -671,16 +618,16 @@ public class AlienWorld extends JPanel implements MouseMotionListener {
 	public Point getLastP() {
 		return lastP;
 	}
-	
+
 	public void setLastP(Point lastP) {
 		this.lastP = lastP;
 	}
-	
+
 	public boolean isPatternInUse() {
-		return lastP.x+lastP.y>-2;
+		return lastP.x + lastP.y > -2;
 	}
-	
-	public void resetPatternInUse(){
+
+	public void resetPatternInUse() {
 		clearTemplate(lastP);
 		lastP = new Point(-1, -1);
 		currentGoLP = null;
@@ -704,5 +651,57 @@ public class AlienWorld extends JPanel implements MouseMotionListener {
 		System.out.println("after the Test");
 		System.out.println("as: " + Arrays.deepToString(as));
 		System.out.println("bs: " + Arrays.deepToString(bs));
+	}
+
+	private long	sleepTime	= 100;
+	private boolean	pause		= true;
+
+	public void start() {
+		executor.execute(future);
+	}
+
+	public void stop() {
+		animationTimer.stop();
+		future.cancel(false);
+		executor.shutdown();
+	}
+
+	public void pause() {
+		pause = true;
+	}
+
+	public void unPause() {
+		pause = false;
+	}
+
+	protected boolean isPaused() {
+		return pause;
+	}
+
+	public void setSleepTime(int sleepTime) {
+		this.sleepTime = sleepTime;
+	}
+
+	public long getSleepTime() {
+		return sleepTime;
+	}
+
+	private Callable<Void> createCallable() {
+		return new Callable<Void>() {
+
+			public Void call() {
+				do {
+					if (!isPaused()) update();
+					try {
+						Thread.sleep(sleepTime);
+					} catch (InterruptedException e) {}
+				} while (!future.isCancelled() && !Thread.currentThread().isInterrupted());
+				return null;
+			}
+		};
+	}
+
+	public Image toJavaFXImage() {
+		return SwingFXUtils.toFXImage(offscreen, null);
 	}
 }

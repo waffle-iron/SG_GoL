@@ -1,0 +1,36 @@
+/*http://docs.oracle.com/javafx/2/api/javafx/scene/doc-files/cssref.html*/
+.label {
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #333333;
+    -fx-effect: dropshadow( gaussian , rgba(255,255,255,0.5) , 0,0,0,1 );
+}
+.tool-bar {
+	-fx-background-color: transparent;
+	-fx-effect: dropshadow( gaussian , #FFDCB1 , 10,0.5,1,1 );
+}
+.menu-bar {
+	-fx-background-color: linear-gradient(#00803F, #006600);
+}
+.button {
+	-fx-text-fill: #008040;
+	-fx-font-family: "Arial Narrow";
+	-fx-font-weight: bold;
+	-fx-background-color: linear-gradient(#FFDCB1, #FFECC1);
+	-fx-background-insets: 0,0,0;
+}
+.button:hover {
+    -fx-background-radius: 0;
+    -fx-text-fill: #FFDCB1;
+    -fx-background-color: linear-gradient(#00803F, #006600);
+	-fx-effect: dropshadow( gaussian , #00803F , 10,0.5,1,1 );
+}
+.button:pressed {
+    -fx-background-radius: 0;
+    -fx-text-fill: #FFDCB1;
+    -fx-background-color: linear-gradient(#004D00, #00994C);
+	-fx-effect: dropshadow( gaussian , #004D00 , 10,0.5,1,1 );
+}
+.root {
+	-fx-background-color: linear-gradient(#00803F, #006600);
+}

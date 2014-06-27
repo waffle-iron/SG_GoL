@@ -1,7 +1,7 @@
 package de.sydsoft.sg_gol.system;
 
-import java.awt.Color;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
@@ -9,13 +9,18 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.swing.JProgressBar;
+import javax.swing.ProgressMonitorInputStream;
+
+import javafx.concurrent.Task;
+import javafx.scene.control.ProgressBar;
+import javafx.scene.paint.Color;
 
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.io.xml.DomDriver;
 
 import de.sydsoft.sg_gol.entities.Alien;
 
-public class SaveGame {
+public class SaveGame{
 	private Color		alienColor;
 	private Color		backgroundColor;
 	private int			pH;
@@ -37,28 +42,41 @@ public class SaveGame {
 		this.aliens = aliens;
 	}
 
-	public static SaveGame load(File fileName, JProgressBar sp) {
-		sp.setValue(0);
-		XStream xStream = new XStream(new DomDriver());
-		sp.setValue(50);
-		SaveGame gol = (SaveGame) xStream.fromXML(fileName);
-		sp.setValue(100);
-		return gol;
+	public static Task<SaveGame> load(final File filePath) {
+		Task<SaveGame> loadTask = new Task<SaveGame>() {
+			@Override
+			protected SaveGame call() throws Exception {
+				updateProgress(1, 3);
+				XStream xStream = new XStream(new DomDriver());
+				updateProgress(2, 3);
+				SaveGame sg = (SaveGame) xStream.fromXML(filePath);
+				updateProgress(3, 3);
+				return sg;
+			}
+		};
+		return loadTask;
 	}
 
-	public static void save(File file, SaveGame gol, JProgressBar sp) {
-		sp.setValue(1);
-		XStream xStream = new XStream(new DomDriver());
-		sp.setValue(10);
-		String xmlString = xStream.toXML(gol);
-		sp.setValue(50);
-		try {
-			Files.write(file.toPath(), xmlString.getBytes(), StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.CREATE);
-			sp.setValue(100);
-		} catch (IOException e) {
-			logger.log(Level.SEVERE, "in SaveSettings.save()", e.fillInStackTrace());
-			sp.setValue(0);
-		}
+	public static Task<SaveGame> save(final File file, final SaveGame gol) {
+		Task<SaveGame> saveTask = new Task<SaveGame>() {
+			@Override
+			protected SaveGame call() throws Exception {
+				updateProgress(1, 4);
+				XStream xStream = new XStream(new DomDriver());
+				updateProgress(2, 4);
+				String xmlString = xStream.toXML(gol);
+				updateProgress(3, 4);
+				try {
+					Files.write(file.toPath(), xmlString.getBytes(), StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.CREATE);
+					updateProgress(4, 4);
+				} catch (IOException e) {
+					logger.log(Level.SEVERE, "in SaveSettings.save()", e.fillInStackTrace());
+					updateProgress(0, 4);
+				}
+				return gol;
+			}
+		};
+		return saveTask;
 	}
 
 	public int getPH() {
