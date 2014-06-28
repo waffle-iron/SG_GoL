@@ -83,9 +83,12 @@ public class GuiAddPattern {
 	    };
 	
 	static {
-		Collections.fill(pattern, new ArrayList<Boolean>(Y));
+		pattern = new ArrayList<>(X);
 		for (int x = 0; x < X; x++) {
-			Collections.fill(pattern.get(x), false);
+			pattern.add(new ArrayList<Boolean>(Y));
+			for (int y = 0; y < Y; y++) {
+				pattern.get(x).add(false);
+			}
 		}
 	}
 	
@@ -178,5 +181,7 @@ public class GuiAddPattern {
 	    ImageView iv = new ImageView(addPat.getImage());
 	    iv.setOnMouseClicked(eventImageClick);
 	    grid.add(iv, 0, 2);
+	    
+	    dlg.show();
 	}
 }

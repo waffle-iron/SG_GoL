@@ -404,7 +404,7 @@ public class AlienWorld {
 
 		});
 
-		iv.setOnMouseDragged(new EventHandler<MouseEvent>() {
+		iv.setOnMouseMoved(new EventHandler<MouseEvent>() {
 			public void handle(MouseEvent e) {
 				if (currentGoLP == null) return;
 				Point newP = new Point((int) (e.getX() - xoff) / alienSize, (int) (e.getY() - yoff) / alienSize);

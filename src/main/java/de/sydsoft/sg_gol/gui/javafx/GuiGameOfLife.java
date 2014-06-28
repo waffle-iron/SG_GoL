@@ -351,7 +351,7 @@ public class GuiGameOfLife extends Application {
 		} catch (BackingStoreException e) {
 			logger.severe(e.getLocalizedMessage());
 		}
-		appSettings.setTitle(Localizer.get("dialog.header") + " " + Localizer.get("version") + " (© Astrid Fiedler, Sythelux Rikd)");
+		appSettings.setTitle(Localizer.get("dialog.header") + " " + Localizer.get("version"));
 		appSettings.turnOnAutoSave(uniqueAppName);
 		stage.getIcons().add(new Image(GuiGameOfLife.class.getResourceAsStream("/de/sydsoft/sg_gol/gui/Logo.png")));
 
