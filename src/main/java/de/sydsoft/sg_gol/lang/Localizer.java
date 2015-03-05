@@ -50,7 +50,7 @@ public abstract class Localizer {
 
 	private static String version() throws IOException {
 		Properties p = new Properties(); 
-		p.load(Localizer.class.getResourceAsStream("/de/sydsoft/sg_gol/txt/PatchNotes.properties"));
+		p.load(Localizer.class.getResourceAsStream("/sg_gol/txt/PatchNotes.properties"));
 		String[] names = new String[p.size()];
 		names = p.stringPropertyNames().toArray(names);
 		Arrays.sort(names);
