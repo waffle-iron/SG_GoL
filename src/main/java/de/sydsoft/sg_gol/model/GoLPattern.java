@@ -123,19 +123,21 @@ public class GoLPattern {
 		patternBar.getChildren().add(golp.createButton());
 	}
 
-	public static void fill(Pane patternBar, Stage stage) {
-		addGUI(patternBar, stage);
+	public static void fill(Pane patternBar, Stage stage, final AlienWorld alienworld) {
+		addGUI(patternBar, stage,alienworld);
 		addPattern("Glider", patternBar, " x  ", "  x ", "xxx ");
 		addPattern("Gun", patternBar, "                        x", "                      x x", "            xx      xx            xx", "           x   x    xx            xx", "xx        x     x   xx", "xx        x   x xx    x x", "          x     x       x", "           x   x", "            xx");
 	}
 
-	private static void addGUI(Pane patternBar, final Stage stage) {//TODO:
+	private static void addGUI(Pane patternBar, final Stage stage, final AlienWorld alienworld) {//TODO:
 		Button newB = new Button(Localizer.get("toolBox.new"));
 		newB.setMaxHeight(Double.MAX_VALUE);
 		newB.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(ActionEvent event) {
+				alienworld.stopRender();
 				GuiAddPattern.showDialog(stage);
+				alienworld.startRender();
 			}
 		});
 		patternBar.getChildren().add(newB);

@@ -21,7 +21,8 @@ public abstract class Localizer {
 	/**
      * 
      */
-	public static String					lang	= System.getProperty("user.language");
+//	public static String					lang	= System.getProperty("user.language");
+	public static String					lang	= "en";
 	/** */
 	protected static String					version	= "0.0.0";
 	private static Logger logger = Logger.getLogger(Localizer.class.getName());

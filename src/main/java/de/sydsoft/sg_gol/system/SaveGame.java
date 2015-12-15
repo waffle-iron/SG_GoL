@@ -1,24 +1,17 @@
 package de.sydsoft.sg_gol.system;
 
+import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.io.xml.DomDriver;
+import de.sydsoft.sg_gol.entities.Alien;
+import javafx.concurrent.Task;
+import javafx.scene.paint.Color;
+
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import javax.swing.JProgressBar;
-import javax.swing.ProgressMonitorInputStream;
-
-import javafx.concurrent.Task;
-import javafx.scene.control.ProgressBar;
-import javafx.scene.paint.Color;
-
-import com.thoughtworks.xstream.XStream;
-import com.thoughtworks.xstream.io.xml.DomDriver;
-
-import de.sydsoft.sg_gol.entities.Alien;
 
 public class SaveGame{
 	private Color		alienColor;
@@ -49,7 +42,7 @@ public class SaveGame{
 				updateProgress(1, 3);
 				XStream xStream = new XStream(new DomDriver());
 				updateProgress(2, 3);
-				SaveGame sg = (SaveGame) xStream.fromXML(filePath);
+				SaveGame sg = (SaveGame) xStream.fromXML(filePath.getAbsolutePath());
 				updateProgress(3, 3);
 				return sg;
 			}

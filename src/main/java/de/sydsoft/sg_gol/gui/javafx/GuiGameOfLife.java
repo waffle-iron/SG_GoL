@@ -29,6 +29,7 @@ import javafx.scene.effect.GaussianBlur;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
@@ -92,7 +93,7 @@ public class GuiGameOfLife extends Application {
 	// private Label speedDheadling;
 	/** Dialog fuer den Speicherfortschritt */
 	// private SProgressDialog progDia;
-	ToolBar							patternBar;
+	HBox							vbButtons;
 	private File					fileName;
 	private static String			uniqueAppName	= "de/sydsoft/sg_gol";
 	private static AppSettings		appSettings		= new AppSettings(true);
@@ -306,8 +307,8 @@ public class GuiGameOfLife extends Application {
 	// }
 	// }
 
-	public ToolBar getPatternBar() {
-		return patternBar;
+	public Pane getPatternBar() {
+		return vbButtons;
 	}
 
 	public static GuiGameOfLife getInstance() {
@@ -337,6 +338,10 @@ public class GuiGameOfLife extends Application {
 	public void setTitle(String title) {
 		appSettings.setTitle(title);
 		stage.setTitle(title);
+	}
+	
+	public static Stage getStage() {
+		return stage;
 	}
 
 	@Override
@@ -627,13 +632,13 @@ public class GuiGameOfLife extends Application {
 
 		root.getChildren().add(controlBar);
 
-		patternBar = new ToolBar();
+		ToolBar patternBar = new ToolBar();
 		patternBar.setOrientation(Orientation.HORIZONTAL);
-		HBox vbButtons = new HBox();
+		vbButtons = new HBox();
 		vbButtons.setSpacing(5);
 		// vbButtons.setPadding(new Insets(0, 20, 10, 20));
 		patternBar.getItems().add(vbButtons);
-		GoLPattern.fill(vbButtons, stage);
+		GoLPattern.fill(vbButtons, stage, alienWorld);
 		// // Toolbox in Fenster einhaengen
 		root.getChildren().add(patternBar);
 
